@@ -18,7 +18,7 @@ mp_face_detection = mp.solutions.face_detection
 mp_face_mesh = mp.solutions.face_mesh
 mp_drawing = mp.solutions.drawing_utils
 
-face_detection = mp_face_detection.FaceDetection(model_selection=1, min_detection_confidence=0.6)
+face_detection=mp_face_detection.FaceDetection(model_selection=1, min_detection_confidence=0.6)
 face_mesh = mp_face_mesh.FaceMesh(static_image_mode=False, refine_landmarks=True, max_num_faces=1)
 
 # Drawing spec for face mesh
