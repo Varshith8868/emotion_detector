@@ -22,7 +22,7 @@ while True:
     if not ret:
         break
 
-    gray=cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    gray=cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
 
     faces=face_classifier.detectMultiScale(gray, 1.3, 5)
 
