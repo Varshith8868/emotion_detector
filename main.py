@@ -14,18 +14,18 @@ emotion_labels = ['Angry','Disgust','Fear','Happy','Sad','Surprise','Neutral']
 face_classifier=cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
 # Start webcam 
-cap = cv2.VideoCapture (0)
+cap = cv2.VideoCapture(0)
 
 while True:
 
-    ret,frame= cap. read() 
+    ret,frame= cap.read() 
 
-    if not  ret:
+    if not ret:
         break
     gray=cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
     faces=face_classifier.detectMultiScale(gray, 1.3, 5)
 
-    for (x, y, w, h) in faces:
+    # for (x, y, w, h) in faces:
         # Draw rectangle around face
         cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
         roi_gray = gray[y:y+h, x:x+w]
