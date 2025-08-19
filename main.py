@@ -16,7 +16,6 @@ face_classifier=cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_front
 
 # Start webcam 
 cap = cv2.VideoCapture(0)
-
 while True:
 
     ret,frame= cap.read() 
