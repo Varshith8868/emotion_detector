@@ -7,7 +7,7 @@ from tensorflow.keras.preprocessing.image import img_to_array
 model = load_model ('model/emotion_model.h5', compile=False)
 
 # Emotion labels based on FER-2013
-emotion_labels = ['Angry','Disgust','Fear','Happy','Sad','Surprise','Neutral']
+emotion_labels = ['Angry ', 'Disgust','Fear','Happy','Sad','Surprise','Neutral']
 
 # Load OpenCV's Haar cascade face detector
 
