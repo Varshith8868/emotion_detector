@@ -32,8 +32,8 @@ while True:
 
 
         # Preprocess ROI and predict
-        if np.sum([roi_gray])!=0:
-            roi = roi_gray.astype('float')/255.0
+        if np.sum([ roi_gray])!=0 :
+            roi = roi_gray.astype( 'float' )/255.0
             roi = np.expand_dims(roi,axis=-1)       # Add channel dimension → (64, 64, 1)
             roi = np.expand_dims(roi,axis=0)        # Add batch dimension → (1, 64, 64, 1)
 
