@@ -37,7 +37,7 @@ while True:
             roi = np.expand_dims(roi,axis=-1)      # Add channel dimension → (64, 64, 1)
             roi = np.expand_dims(roi,axis=0)        # Add batch dimension → (1, 64, 64, 1)
 
-            prediction =  model.predict(roi, verbose=0)[0]
+            prediction = model.predict(roi, verbose=0)[0]
             label=emotion_labels[np.argmax(prediction)]
 
             label_position=(x,y - 10)
