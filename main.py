@@ -40,14 +40,14 @@ while True:
             prediction = model.predict(roi, verbose=0)[0]
             label = emotion_labels[np.argmax(prediction)]
 
-            label_position = (x, y - 10)
+            label_position=(x, y - 10)
             cv2.putText(frame, label, label_position, cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
         else:
             cv2.putText(frame, "No Face", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
 
     cv2.imshow('Emotion Detector', frame)
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    if cv2.waitKey (1) & 0xFF == ord('q'):
         break
 
 # Cleanup
