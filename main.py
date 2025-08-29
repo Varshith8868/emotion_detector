@@ -38,7 +38,7 @@ while True:
             roi = np.expand_dims(roi,axis=0)        # Add batch dimension → (1, 64, 64, 1)
 
             prediction = model.predict(roi, verbose=0)[0]
-            label = emotion_labels[np.argmax(prediction)]
+            label=emotion_labels[np.argmax(prediction)]
 
             label_position=(x,y - 10)
             cv2.putText(frame, label, label_position, cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
