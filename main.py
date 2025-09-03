@@ -8,10 +8,7 @@ model = load_model ('model/emotion_model.h5', compile=False)
 
 # Emotion labels based on FER-2013
 emotion_labels = ['Angry','Disgust','Fear','Happy','Sad','Surprise','Neutral']
-
 # Load OpenCV's Haar cascade face detector
-
-
 face_classifier=cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
 # Start webcam 
@@ -29,7 +26,6 @@ while True:
         cv2.rectangle(frame, (x, y),(x+w, y+h),(255, 0, 0), 2)
         roi_gray = gray[y:y+h, x:x+w]
         roi_gray = cv2.resize(roi_gray, (64, 64),interpolation=cv2.INTER_AREA)
-
 
         # Preprocess ROI and predict
         if np.sum([roi_gray]) != 0:
