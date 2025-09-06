@@ -9,7 +9,7 @@ model = load_model('model/emotion_model.h5', compile=False)
 # Emotion labels based on FER-2013
 emotion_labels = ['Angry','Disgust','Fear','Happy','Sad','Surprise','Neutral']
 # Load OpenCV's Haar cascade face detector
-face_classifier=cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+face_classifier=cv2.CascadeClassifier(cv2.data.haarcascades+'haarcascade_frontalface_default.xml')
 # Start webcam 
 cap=cv2.VideoCapture(0) 
 while True:
