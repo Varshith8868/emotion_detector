@@ -13,10 +13,9 @@ face_classifier=cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_front
 # Start webcam 
 cap=cv2.VideoCapture(0) 
 while True:
-    ret,frame= cap.read() 
+    ret,frame=cap.read() 
     if not ret:  
-        
-        break;
+        break ;
     gray=cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
     faces=face_classifier.detectMultiScale(gray, 1.3, 5)
 
