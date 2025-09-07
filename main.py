@@ -25,7 +25,7 @@ while True:
         roi_gray = gray[y:y+h, x:x+w]
         roi_gray = cv2.resize(roi _gray, (64, 64),interpolation=cv2.INTER_AREA)
 
-        # Preprocess ROI and predict
+        # Preprocess ROI and predi ct
         if np.sum([roi_gray]) != 0:
             roi = roi_gray.astype('float')/255.0
             roi = np.expand_dims (roi,axis=-1)   # Add channel dimension → (64, 64, 1)
