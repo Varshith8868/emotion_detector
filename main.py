@@ -19,22 +19,22 @@ while True:
     gray=cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
     faces=face_classifier.detectMultiScale(gray, 1.3, 5)
 
-    for (x,y,w,h) in faces :
+    for (x,y,w,h) in  faces :
         # Draw rectangle around face
         cv2.rectangle(frame, (x, y),(x+w, y+h),(255, 0, 0), 2)
         roi_gray = gray[y:y+h, x:x+w]
-        roi_gray = cv2.resize(roi_gray, (64, 64),interpolation=cv2.INTER_AREA)
+        roi_gray = cv2.resize(roi _gray, (64, 64),interpolation=cv2.INTER_AREA)
 
         # Preprocess ROI and predict
         if np.sum([roi_gray]) != 0:
             roi = roi_gray.astype('float')/255.0
-            roi = np.expand_dims(roi,axis=-1)   # Add channel dimension → (64, 64, 1)
+            roi = np.expand_dims (roi,axis=-1)   # Add channel dimension → (64, 64, 1)
             roi = np.expand_dims(roi,axis=0)     # Add batch dimension → (1, 64, 64, 1)
 
-            prediction = model.predict(roi, verbose=0)[0]
+            prediction = model.predict(roi,verbose=0)[0]
             label=emotion_labels[np.argmax(prediction)]
 
-            label_position=(x,y - 10)
+            label_position=(x,y-10)
             cv2.putText(frame, label, label_position, cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
         else:
             cv2.putText(frame, "No Face", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
