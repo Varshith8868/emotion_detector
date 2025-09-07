@@ -15,8 +15,8 @@ cap=cv2.VideoCapture(0)
 while True:
     ret,frame=cap.read() 
     if not ret:  
-        break ;
-    gray=cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+        break;
+    gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
     faces=face_classifier.detectMultiScale(gray, 1.3, 5)
 
     for (x,y,w,h) in  faces :
