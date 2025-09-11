@@ -12,7 +12,7 @@ from PIL import Image
 model = load_model('model/emotion_model.h5', compile=False)
 
 # Emotion labels
-emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
+emotion_labels = ['Angry','Disgust','Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
 
 # Initialize MediaPipe components
 mp_face_detection=mp.solutions.face_detection
