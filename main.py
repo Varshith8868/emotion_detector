@@ -2,7 +2,7 @@
 import cv2
 import numpy as np
 from tensorflow.keras.models import load_model
-import mediapipe as mp
+import mediapipe as  mp
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import io
