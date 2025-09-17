@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import io
 from PIL import Image
-
 # Load the trained model
 model = load_model('model/emotion_model.h5', compile=False)
 
