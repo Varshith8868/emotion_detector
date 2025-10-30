@@ -1,0 +1,8 @@
+opencv-python
+mediapipe
+tensorflow
+numpy
+matplotlib
+Pillow
+pyttsx3
+playsound==1.2.2

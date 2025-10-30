@@ -1,128 +1,134 @@
-# ---Vesion 2---
+# main.py
+import os
 import cv2
 import numpy as np
+import mediapipe as mp
 from tensorflow.keras.models import load_model
-import mediapipe as  mp
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-import io
-from PIL import Image
-# Load the trained model
-model = load_model('model/emotion_model.h5', compile=False)
 
-# Emotion labels
-emotion_labels = ['Angry','Disgust','Fear','Happy','Sad', 'Surprise', 'Neutral']
+from utils import draw_radar_chart, overlay_image
+from audio import speak_emotion
+from history import EmotionHistory
 
-# Initialize MediaPipe components
-mp_face_detection=mp.solutions.face_detection
+# --- Config ---
+MODEL_PATH = os.path.join("model", "emotion_model.h5")
+emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
+
+# Load model
+model = load_model(MODEL_PATH, compile=False)
+
+# MediaPipe setup
+mp_face_detection = mp.solutions.face_detection
 mp_face_mesh = mp.solutions.face_mesh
 mp_drawing = mp.solutions.drawing_utils
 
-face_detection=mp_face_detection.FaceDetection(model_selection=1, min_detection_confidence=0.6)
+face_detection = mp_face_detection.FaceDetection(model_selection=1, min_detection_confidence=0.6)
 face_mesh = mp_face_mesh.FaceMesh(static_image_mode=False, refine_landmarks=True, max_num_faces=1)
-
-# Drawing spec for face mesh
 drawing_spec = mp_drawing.DrawingSpec(thickness=1, circle_radius=1, color=(0, 255, 255))
 
-# Start webcam
+# History manager
+history = EmotionHistory(labels=emotion_labels, maxlen=30)
+
+# Webcam
 cap = cv2.VideoCapture(0)
+if not cap.isOpened():
+    raise RuntimeError("Could not open webcam. Check camera index.")
 
-def draw_radar_chart(preds):
-    # Create radar chart from predictions
-    labels = emotion_labels
-    values = preds.tolist()
-    values += values[:1]  # close the radar chart
+# Toggles
+sound_enabled = True
+show_history_panel = True
 
-    angles = np.linspace(0, 2 * np.pi, len(labels), endpoint=False).tolist()
-    angles += angles[:1]
+print("Press 's' to toggle sound, 'h' to toggle history panel, 'q' to quit.")
 
-    fig, ax = plt.subplots(figsize=(3, 3), subplot_kw=dict(polar=True))
-    ax.plot(angles, values, color='green', linewidth=2)
-    ax.fill(angles, values, color='lime', alpha=0.25)
-    ax.set_yticklabels([])
-    ax.set_xticks(angles[:-1])
-    ax.set_xticklabels(labels, fontsize=8)
-    ax.grid(True)
-
-    canvas = FigureCanvas(fig)
-    buf = io.BytesIO()
-    canvas.print_png(buf)
-    buf.seek(0)
-    img = Image.open(buf)
-    img = np.array(img)
-    buf.close()
-    plt.close(fig)
-    return cv2.cvtColor(img, cv2.COLOR_RGBA2BGR)
-
+# === Main Loop ===
 while True:
     ret, frame = cap.read()
     if not ret:
         break
 
-    # Flip frame for natural webcam view
+    # Make window fullscreen
+    cv2.namedWindow('Emotion Detector (Modular)', cv2.WINDOW_NORMAL)
+    cv2.setWindowProperty('Emotion Detector (Modular)', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+
+    # Mirror for natural feel
     frame = cv2.flip(frame, 1)
-    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    results = face_detection.process(rgb_frame)
+    h_frame, w_frame = frame.shape[:2]
+    rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    detections = face_detection.process(rgb)
 
-    if results.detections:
-        for detection in results.detections:
-            bboxC = detection.location_data.relative_bounding_box
-            ih, iw, _ = frame.shape
-            x = int(bboxC.xmin * iw)
-            y = int(bboxC.ymin * ih)
-            w = int(bboxC.width * iw)
-            h = int(bboxC.height * ih)
-
-            # Make sure bounding box is within the frame
+    if detections.detections:
+        for det in detections.detections:
+            bboxC = det.location_data.relative_bounding_box
+            x = int(bboxC.xmin * w_frame)
+            y = int(bboxC.ymin * h_frame)
+            w = int(bboxC.width * w_frame)
+            h = int(bboxC.height * h_frame)
             x, y = max(0, x), max(0, y)
-            face_img = frame[y:y + h, x:x + w]
+            w = min(w, w_frame - x)
+            h = min(h, h_frame - y)
 
-            # Emotion Prediction
+            face = frame[y:y + h, x:x + w]
+            if face.size == 0:
+                continue
+
             try:
-                roi = cv2.cvtColor(face_img, cv2.COLOR_BGR2GRAY)
+                roi = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
                 roi = cv2.resize(roi, (64, 64))
                 roi = roi.astype("float") / 255.0
                 roi = np.expand_dims(roi, axis=-1)
                 roi = np.expand_dims(roi, axis=0)
 
                 preds = model.predict(roi, verbose=0)[0]
-                label = emotion_labels[np.argmax(preds)]
-                confidence = np.max(preds)
+                idx = int(np.argmax(preds))
+                label = emotion_labels[idx]
+                conf = float(np.max(preds))
+
+                # Update history
+                history.push(label, conf)
+
+                # Speak emotion (optional)
+                if sound_enabled:
+                    speak_emotion(label)
 
                 # Draw label
-                cv2.putText(frame, f"{label} ({confidence*100:.1f}%)", (x, y - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+                cv2.putText(frame, f"{label} ({conf*100:.1f}%)", (x, y - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
 
-                # Radar chart beside face
-                radar_img = draw_radar_chart(preds)
-                radar_h, radar_w, _ = radar_img.shape
+                # Draw face mesh
+                mesh_results = face_mesh.process(rgb)
+                if mesh_results.multi_face_landmarks:
+                    for fl in mesh_results.multi_face_landmarks:
+                        mp_drawing.draw_landmarks(
+                            image=frame,
+                            landmark_list=fl,
+                            connections=mp_face_mesh.FACEMESH_TESSELATION,
+                            landmark_drawing_spec=drawing_spec,
+                            connection_drawing_spec=drawing_spec
+                        )
 
-                # Resize radar chart
-                if y + radar_h > frame.shape[0]:
-                    radar_img = radar_img[:frame.shape[0] - y, :, :]
-                if x + w + 10 + radar_w > frame.shape[1]:
-                    radar_img = radar_img[:, :frame.shape[1] - (x + w + 10), :]
+                # === Smaller Radar Chart (Top-Left) ===
+                radar = draw_radar_chart(preds, emotion_labels, size=(150, 150))
+                frame = overlay_image(frame, radar, 10, 10)
 
-                frame[y:y + radar_img.shape[0], x + w + 10:x + w + 10 + radar_img.shape[1]] = radar_img
+                # === Smaller History Bar Chart (Bottom-Left) ===
+                if show_history_panel:
+                    trend = history.trend_image(size=(250, 100))
+                    frame = overlay_image(frame, trend, 10, h_frame - trend.shape[0] - 10)
 
             except Exception as e:
-                print("Emotion detection failed:", e)
-                 # Detect and draw face mesh
-    mesh_results = face_mesh.process(rgb_frame)
-    if mesh_results.multi_face_landmarks:
-        for face_landmarks in mesh_results.multi_face_landmarks:
-            mp_drawing.draw_landmarks(
-                image=frame,
-                landmark_list=face_landmarks,
-                connections=mp_face_mesh.FACEMESH_TESSELATION,
-                landmark_drawing_spec=drawing_spec,
-                connection_drawing_spec=drawing_spec
-            )
+                print("Prediction error:", e)
 
-    # Display the frame
-    cv2.imshow('Emotion Detector + Face Mesh + Radar Graph', frame)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    # Display final frame
+    cv2.imshow('Emotion Detector (Modular)', frame)
+    key = cv2.waitKey(1) & 0xFF
+
+    if key == ord('q'):
         break
+    elif key == ord('s'):
+        sound_enabled = not sound_enabled
+        print("Sound:", "ON" if sound_enabled else "OFF")
+    elif key == ord('h'):
+        show_history_panel = not show_history_panel
+        print("History panel:", "ON" if show_history_panel else "OFF")
 
 # Cleanup
 cap.release()
